@@ -1,6 +1,6 @@
 ---
 name: activate-plugins
-description: Install and activate this user's standard Claude Code plugin set (code-review, claude-code-setup, understand-anything, claude-mem, context7) in the current session. Invoke when the user says "activate-plugins", "ladda mina plugins", "aktivera mina plugins", or "kör plugin-setupen".
+description: Install and activate this user's standard Claude Code plugin set (code-review, claude-code-setup, code-simplifier, understand-anything, claude-mem, context7) in the current session. Invoke when the user says "activate-plugins", "ladda mina plugins", "aktivera mina plugins", or "kör plugin-setupen".
 ---
 
 # Activate standard plugin set
@@ -30,6 +30,7 @@ When invoked, do this in order and report the outcome:
    ```bash
    claude plugin install code-review@claude-plugins-official --scope user
    claude plugin install claude-code-setup@claude-plugins-official --scope user
+   claude plugin install code-simplifier@claude-plugins-official --scope user
    claude plugin install understand-anything@understand-anything --scope user
    claude plugin install claude-mem@thedotmack --scope user
    claude plugin install context7@context7-marketplace --scope user
