@@ -37,6 +37,19 @@ else
   log "gstack already present ($(cat "$GSTACK_DIR/VERSION" 2>/dev/null || echo 'version unknown'))"
 fi
 
+TASK_OBSERVER_DIR="$HOME/.claude/skills/task-observer"
+if [ ! -f "$TASK_OBSERVER_DIR/SKILL.md" ]; then
+  log "Installing task-observer skill..."
+  rm -rf "${TASK_OBSERVER_DIR}.tmp"
+  GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 \
+    https://github.com/rebelytics/one-skill-to-rule-them-all "${TASK_OBSERVER_DIR}.tmp" 2>/dev/null \
+    && mv "${TASK_OBSERVER_DIR}.tmp" "$TASK_OBSERVER_DIR" \
+    && log "task-observer installed" \
+    || log "WARNING: task-observer clone failed"
+else
+  log "task-observer already present"
+fi
+
 # ── VERIFY ────────────────────────────────────────────────────────────────────
 log "Running verification..."
 "$(dirname "$0")/test-plugins.sh" && log "All checks passed." || log "WARNING: Some checks failed — see above."

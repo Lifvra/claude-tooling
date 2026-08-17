@@ -1,6 +1,6 @@
 ---
 name: activate-plugins
-description: Install and activate this user's standard Claude Code plugin set (code-review, claude-code-setup, code-simplifier, superpowers, understand-anything, claude-mem, context7) and skill suite (gstack) in the current session. Invoke when the user says "activate-plugins", "ladda mina plugins", "aktivera mina plugins", or "kör plugin-setupen".
+description: Install and activate this user's standard Claude Code plugin set (code-review, claude-code-setup, code-simplifier, superpowers, understand-anything, claude-mem, context7) and skill suites (gstack, task-observer) in the current session. Invoke when the user says "activate-plugins", "ladda mina plugins", "aktivera mina plugins", or "kör plugin-setupen".
 ---
 
 # Activate standard plugin set
@@ -45,12 +45,17 @@ claude plugin install claude-mem@thedotmack                     --scope user
 claude plugin install context7@context7-marketplace             --scope user
 ```
 
-### 3. Install gstack skill suite
+### 3. Install skill suites
 
 ```bash
 if [ ! -f ~/.claude/skills/gstack/SKILL.md ]; then
   GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 \
     https://github.com/garrytan/gstack ~/.claude/skills/gstack
+fi
+
+if [ ! -f ~/.claude/skills/task-observer/SKILL.md ]; then
+  GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 \
+    https://github.com/rebelytics/one-skill-to-rule-them-all ~/.claude/skills/task-observer
 fi
 ```
 
