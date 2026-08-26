@@ -54,4 +54,13 @@ fi
 log "Running verification..."
 "$(dirname "$0")/test-plugins.sh" && log "All checks passed." || log "WARNING: Some checks failed — see above."
 
+# ── MEMORY RESTORE ────────────────────────────────────────────────────────────
+# Restore claude-mem observations from the git-backed backup branch.
+# Runs in background so it doesn't delay session startup.
+MEM_IMPORT="/home/user/web/scripts/mem-backup-import.sh"
+if [ -f "$MEM_IMPORT" ]; then
+  log "Starting memory restore in background..."
+  bash "$MEM_IMPORT" &
+fi
+
 exit 0

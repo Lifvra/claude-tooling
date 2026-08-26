@@ -9,6 +9,17 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/web/scripts/mem-backup-export.sh 2>/dev/null || true"
+          }
+        ]
+      }
     ]
   }
 }
