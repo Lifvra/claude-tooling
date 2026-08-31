@@ -90,6 +90,15 @@ Call `mcp__plugin_claude-mem_mcp-search__session_start_context` with:
 - projects: "lifvra/hq,lifvra/web,lifvra/landing"
 Report: what context was injected, or "first session / empty"
 
+**Cloud sync** (local sessions only — worker is not available in remote/cloud sessions):
+Check `http://127.0.0.1:${CLAUDE_MEM_WORKER_PORT:-37700}/api/sync/status` —
+report `configured: true / hub.reachable: true` or warn to run `claude-mem:cloud-sync`.
+In remote sessions, the git-backed `mem-backup-import.sh` is the restore fallback.
+
+**Write path note:** In remote sessions, claude-mem observation writing is NOT exposed as
+an MCP tool. Use the `/session-wrap-up` prompt's shared brain step at session end, or
+`claude-mem:cloud-sync` to verify SyncHub is configured so writes sync automatically.
+
 ### 3. MCPs
 Call `ListConnectors` — list each as ✅ connected+enabled, ⚠️ enabled but
 unknown state, ❌ disabled in chat
@@ -133,6 +142,7 @@ Output a single compact table:
 |---|---|---|
 | Plugins | ✅/❌ | N/7 plugins |
 | Memory | ✅/empty | |
+| Cloud sync | ✅/⚠️/N/A | configured+reachable / warning / remote session |
 | MCPs | N/14 active | list any ❌ |
 | Plugin suites | ✅/❌ | superpowers, claude-mem, understand-anything, code-review, context7 |
 | Skill suites | ✅/❌ | gstack, task-observer |
@@ -162,4 +172,4 @@ context:
 | Reviewing a diff independently | `independent-diff-review` |
 | UI/visual work touching Lifvra brand | `lifvra-visual-review` + `apple-design` |
 | Need to find an existing service/edge/tool | `service-index-lookup` |
-| **Shared brain / STATUS updates** | After each push, merge, or resolved decision — not on a timer. At session end: call `/standup` to log key decisions into shared brain. Never "every Nth interaction" — use state-change triggers. |
+| **Shared brain / STATUS updates** | After each push, merge, or resolved decision — not on a timer. At session end: run `/session-wrap-up`. **Remote sessions:** write path not MCP-accessible — verify cloud-sync is configured (`claude-mem:cloud-sync`) so observations sync automatically. Never "every Nth interaction" — use state-change triggers. |
