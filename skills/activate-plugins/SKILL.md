@@ -93,11 +93,9 @@ Report: what context was injected, or "first session / empty"
 **Cloud sync** (local sessions only — worker is not available in remote/cloud sessions):
 Check `http://127.0.0.1:${CLAUDE_MEM_WORKER_PORT:-37700}/api/sync/status` —
 report `configured: true / hub.reachable: true` or warn to run `claude-mem:cloud-sync`.
-In remote sessions, the git-backed `mem-backup-import.sh` is the restore fallback.
-
-**Write path note:** In remote sessions, claude-mem observation writing is NOT exposed as
-an MCP tool. Use the `/session-wrap-up` prompt's shared brain step at session end, or
-`claude-mem:cloud-sync` to verify SyncHub is configured so writes sync automatically.
+In remote sessions: N/A — a git-backed backup loop handles both import (session start via
+`mem-backup-import.sh`) and export (session end via `mem-backup-export.sh` →
+`claude-mem-backup` branch on `Lifvra/web`). No cloud-sync required.
 
 ### 3. MCPs
 Call `ListConnectors` — list each as ✅ connected+enabled, ⚠️ enabled but
@@ -172,4 +170,4 @@ context:
 | Reviewing a diff independently | `independent-diff-review` |
 | UI/visual work touching Lifvra brand | `lifvra-visual-review` + `apple-design` |
 | Need to find an existing service/edge/tool | `service-index-lookup` |
-| **Shared brain / STATUS updates** | After each push, merge, or resolved decision — not on a timer. At session end: run `/session-wrap-up`. **Remote sessions:** write path not MCP-accessible — verify cloud-sync is configured (`claude-mem:cloud-sync`) so observations sync automatically. Never "every Nth interaction" — use state-change triggers. |
+| **Shared brain / STATUS updates** | After each push, merge, or resolved decision — not on a timer. At session end: run `/session-wrap-up`. **Remote sessions:** observations auto-export to git on session end — no manual step needed. Never "every Nth interaction" — use state-change triggers. |

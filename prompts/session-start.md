@@ -19,7 +19,8 @@ Report: what context was injected, or "first session / empty"
 
 **Cloud sync** (local sessions only): check `http://127.0.0.1:${CLAUDE_MEM_WORKER_PORT:-37700}/api/sync/status`
 — report configured+reachable ✅ or warn ⚠️ to run `claude-mem:cloud-sync`.
-In remote sessions: N/A (git-backed restore is fallback; write path not MCP-accessible).
+In remote sessions: N/A — git-backed backup loop handles both import (session start) and export
+(session end via `mem-backup-export.sh` → `claude-mem-backup` branch). No cloud-sync required.
 
 ## 3. MCPs
 Call `ListConnectors` — list each as ✅ connected+enabled, ⚠️ enabled but unknown state, ❌ disabled in chat
@@ -80,5 +81,5 @@ Print this reminder table:
 | Reviewing a diff independently | `independent-diff-review` |
 | UI/visual work touching Lifvra brand | `lifvra-visual-review` + `apple-design` |
 | Need to find an existing service/edge/tool | `service-index-lookup` |
-| Shared brain / STATUS updates | After each push, merge, or resolved decision. At session end: run `/session-wrap-up`. **Remote sessions:** write path not MCP-accessible — verify cloud-sync configured (`claude-mem:cloud-sync`). Never on a timer. |
+| Shared brain / STATUS updates | After each push, merge, or resolved decision. At session end: run `/session-wrap-up`. **Remote sessions:** observations auto-export to git on session end — no manual step needed. Never on a timer. |
 ```
