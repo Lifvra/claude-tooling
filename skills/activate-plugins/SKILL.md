@@ -73,3 +73,93 @@ claude plugin list
 Scripts live in `Lifvra/claude-tooling` — keep them in sync when adding new
 plugins. SessionStart hook in `launcher-settings.json` runs
 `session-start-plugins.sh` automatically on every new session.
+
+---
+
+## Startup sequence (run after plugins are confirmed)
+
+When invoked with arguments, run this full startup sequence and report a
+compact status table at the end. Run independent steps in parallel.
+
+### 1. Plugins
+Run `~/.claude/session-start-plugins.sh && ~/.claude/test-plugins.sh`
+Report: pass/fail + plugin count
+
+### 2. Shared Brain (Memory)
+Call `mcp__plugin_claude-mem_mcp-search__session_start_context` with:
+- projects: "lifvra/hq,lifvra/web,lifvra/landing"
+Report: what context was injected, or "first session / empty"
+
+### 3. MCPs
+Call `ListConnectors` — list each as ✅ connected+enabled, ⚠️ enabled but
+unknown state, ❌ disabled in chat
+
+### 4. Skills — full inventory check
+Confirm ALL of the following suites/skills are present in the skill list.
+Missing ones are ❌ gaps that need fixing.
+
+**Plugin suites** (installed by session-start-plugins.sh):
+`superpowers`, `claude-mem`, `understand-anything`, `code-review`, `context7`
+
+**Skill suites** (cloned by session-start-plugins.sh):
+`gstack`, `task-observer`
+
+**Lifvra workflow skills** (mirrored from hq/.agents/skills/ via mirror-skills.mjs):
+`secret-detection`, `deploy`, `preview-testing`,
+`three-role-code-review`, `verify-before-claiming-done`,
+`pre-approve-architecture-check`, `test-driven-development`,
+`investigate-root-cause`, `internal-autoplan`,
+`independent-diff-review`, `lifvra-visual-review`, `service-index-lookup`
+
+### 5. Trio Coordination (read, don't act yet)
+Run these in parallel:
+- `mcp__HQ__get_coordination_ledger` — active work claims across trio; flag
+  any WIP row older than 14 days as ⚠️ stale
+- `mcp__HQ__list_active_work_claims` — intra-HQ session claims (§4.1)
+- `mcp__HQ__get_urgent_triage` — anything urgent right now
+- `mcp__HQ__get_ecosystem_status` — live health of HQ/Web/Landing
+- `mcp__HQ__list_open_deliberations` — open Council decisions needing human
+- `mcp__Claude_Code_Remote__list_sessions` (mine: true) — detect parallel
+  sessions working in the same repos; include their task_summary if present
+
+Report: summarize active claims, conflicts, stale ledger rows, urgent items,
+open deliberations, and parallel sessions that could cause overlap. Flag
+anything that needs attention before starting work.
+
+### 6. Status Report
+Output a single compact table:
+
+| Check | Status | Notes |
+|---|---|---|
+| Plugins | ✅/❌ | N/7 plugins |
+| Memory | ✅/empty | |
+| MCPs | N/14 active | list any ❌ |
+| Plugin suites | ✅/❌ | superpowers, claude-mem, understand-anything, code-review, context7 |
+| Skill suites | ✅/❌ | gstack, task-observer |
+| Lifvra skills | N/12 present | list any ❌ missing |
+| Intra-HQ claims | N claims | list scope+owner if any |
+| Trio ledger WIP | N rows (N stale) | flag stale rows |
+| Urgent items | N items | list if any |
+| Open deliberations | N open | awaiting_decision / awaiting_outcome / in_progress |
+| Parallel sessions | N running | list titles + task_summary for overlap |
+
+After the table: one-line summary of what to be aware of before starting
+work today.
+
+### 7. Habit Triggers (always print this reminder block)
+
+Print this table verbatim at the end of every startup so the rules are in
+context:
+
+| Situation | Invoke |
+|---|---|
+| Designing new test coverage or writing tests | `test-driven-development` or `superpowers:test-driven-development` |
+| PR with architectural scope (new edge, schema, contract, shared signal type) | `three-role-code-review` |
+| Before merging any PR you own | `verify-before-claiming-done` |
+| Before implementing a new feature or integration | `pre-approve-architecture-check` (checks trio coordination §6) |
+| Debugging a non-obvious bug | `investigate-root-cause` |
+| Complex multi-step task needing a plan | `internal-autoplan` or `superpowers:writing-plans` |
+| Reviewing a diff independently | `independent-diff-review` |
+| UI/visual work touching Lifvra brand | `lifvra-visual-review` + `apple-design` |
+| Need to find an existing service/edge/tool | `service-index-lookup` |
+| **Shared brain / STATUS updates** | After each push, merge, or resolved decision — not on a timer. At session end: call `/standup` to log key decisions into shared brain. Never "every Nth interaction" — use state-change triggers. |
