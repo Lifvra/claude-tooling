@@ -12,7 +12,10 @@ Run all independent steps in parallel.
 Run `~/.claude/session-start-plugins.sh && ~/.claude/test-plugins.sh`
 Report: pass/fail + plugin count
 
-## 2. Shared Brain (Memory)
+## 2. Shared Brain (Memory) + Canonical State Read-In
+Run all sub-steps in parallel.
+
+**claude-mem plugin context:**
 Call `mcp__plugin_claude-mem_mcp-search__session_start_context` with:
 - projects: "lifvra/hq,lifvra/web,lifvra/landing"
 Report: what context was injected, or "first session / empty"
@@ -21,6 +24,27 @@ Report: what context was injected, or "first session / empty"
 — report configured+reachable ✅ or warn ⚠️ to run `claude-mem:cloud-sync`.
 In remote sessions: N/A — git-backed backup loop handles both import (session start) and export
 (session end via `mem-backup-export.sh` → `claude-mem-backup` branch). No cloud-sync required.
+
+**SESSION-MEMORY.md** (the canonical cross-session memory — auto-injected by brain-log hook):
+If the `─── SESSION-MEMORY.md ───` block appears in your context (injected by the SessionStart hook):
+→ extract and summarize: locked decisions, active in-flight PRs, open human decisions, key system IDs.
+If NOT visible (hook failed or web/landing session):
+→ fetch immediately: `mcp__github__get_file_contents(owner:Lifvra, repo:hq, path:public/docs/shared-memory/SESSION-MEMORY.md, ref:refs/heads/main)` — do this before any other work.
+Report: 3–5 bullet summary of what's locked + what's active.
+
+**STATUS.md** (live ecosystem priority + status):
+Fetch: `mcp__github__get_file_contents(owner:Lifvra, repo:hq, path:public/docs/shared-memory/STATUS.md, ref:refs/heads/main)`
+Report: version number + last 2 changelog entries + any P0/P1 rows that are `🟡 pågår`.
+
+**Cross-session brain log** (may already be injected by hook under `─── Cross-session ───`):
+If injected: note the entries. If not: no action needed (hook only runs when log files exist this month).
+
+> **Continuous saving rule — read and internalize now:**
+> Write to SESSION-MEMORY.md IMMEDIATELY when: root cause confirmed · decision locked ·
+> key ID/state/ownership learned · work block done · ~60 min elapsed.
+> Mechanic: (a) get SHA → `mcp__github__get_file_contents(...SESSION-MEMORY.md, ref:refs/heads/main)`
+>           (b) `mcp__github__create_or_update_file(owner:Lifvra, repo:hq, branch:main, sha:..., content:<full updated file>)`
+> Re-fetch SESSION-MEMORY.md before each major new subtask.
 
 ## 3. MCPs
 Call `ListConnectors` — list each as ✅ connected+enabled, ⚠️ enabled but unknown state, ❌ disabled in chat
@@ -53,8 +77,10 @@ Output a single compact table:
 | Check | Status | Notes |
 |---|---|---|
 | Plugins | ✅/❌ | N/7 plugins |
-| Memory | ✅/empty | |
+| claude-mem | ✅/empty | what context was injected |
 | Cloud sync | ✅/⚠️/N/A | configured+reachable / warning / remote session |
+| SESSION-MEMORY | ✅/⚠️ | injected by hook / manually fetched / not found |
+| STATUS.md | ✅/⚠️ | vX.XX loaded, last entry date |
 | MCPs | N/14 active | list any ❌ |
 | Plugin suites | ✅/❌ | superpowers, claude-mem, understand-anything, code-review, context7 |
 | Skill suites | ✅/❌ | gstack, task-observer |
@@ -81,5 +107,7 @@ Print this reminder table:
 | Reviewing a diff independently | `independent-diff-review` |
 | UI/visual work touching Lifvra brand | `lifvra-visual-review` + `apple-design` |
 | Need to find an existing service/edge/tool | `service-index-lookup` |
-| Shared brain / STATUS updates | After each push, merge, or resolved decision. At session end: run `/session-wrap-up`. **Remote sessions:** observations auto-export to git on session end — no manual step needed. Never on a timer. |
+| Finding confirmed / decision locked / key info learned | Write to SESSION-MEMORY.md NOW (see mechanic in §2 above) |
+| ~60 min into session | Write SESSION-MEMORY.md checkpoint — don't wait until end |
+| After each push/merge/resolved decision | Update STATUS.md + COORDINATION.md if trio-scope. At session end: run `/session-wrap-up`. |
 ```

@@ -1,11 +1,11 @@
-# Session Wrap-Up — Lifvra
+---
+name: session-wrap-up
+description: End-of-session wrap-up sequence — flush to SESSION-MEMORY.md, release work claims, hand off open PRs, sync claude-mem, update COORDINATION.md and STATUS.md, check parallel sessions, and print a session summary. Invoke when the user says "wrap up", "session wrap-up", "end session", "avsluta session", or at the natural end of a working session.
+---
 
-Paste this at the end of every Claude Code session before closing.
+# End-of-session wrap-up sequence
 
-```
-/session-wrap-up
-
-Run this end-of-session wrap-up sequence. Run independent steps in parallel where possible.
+Run independent steps in parallel where possible.
 
 ## 1. Release Work Claims
 Call `mcp__HQ__list_active_work_claims` — for any claim this session owns,
@@ -96,4 +96,3 @@ Output this wrap-up block:
 
 **Claims released:** [N]
 ---
-```
