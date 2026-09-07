@@ -79,7 +79,7 @@ Output a single compact table:
 
 | Check | Status | Notes |
 |---|---|---|
-| Plugins | ✅/❌ | N/7 plugins |
+| Plugins | ✅/❌ | N/8 plugins |
 | claude-mem | ✅/empty | what context was injected |
 | Cloud sync | ✅/⚠️/N/A | configured+reachable / warning / remote session |
 | SESSION-MEMORY | ✅/⚠️ | injected by hook / manually fetched / not found |
