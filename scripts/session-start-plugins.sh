@@ -24,6 +24,7 @@ claude plugin install understand-anything@understand-anything         --scope us
 claude plugin install claude-mem@thedotmack                           --scope user 2>/dev/null || true
 claude plugin install context7@context7-marketplace                   --scope user 2>/dev/null || true
 claude plugin install security-guidance@knowledge-work-plugins        --scope user 2>/dev/null || true
+claude plugin install tinyfish@knowledge-work-plugins                 --scope user 2>/dev/null || true
 
 # ── SKILL SUITES (git-cloned, not marketplace plugins) ────────────────────────
 GSTACK_DIR="$HOME/.claude/skills/gstack"
