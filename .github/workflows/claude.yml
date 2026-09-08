@@ -18,16 +18,34 @@ permissions:
 jobs:
   claude:
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (
+        github.event_name == 'issue_comment' &&
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+      ) ||
+      (
+        github.event_name == 'pull_request_review_comment' &&
+        contains(github.event.comment.body, '@claude') &&
+        contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
+      ) ||
+      (
+        github.event_name == 'issues' &&
+        (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) &&
+        contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.issue.author_association)
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      # SECURITY TODO: pin to commit SHA to prevent tag-mutation supply chain attack.
+      # Run: gh api repos/actions/checkout/git/ref/tags/v4 | jq -r .object.sha
+      # Then replace @v4 with @<sha> # v4.x.x
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
           persist-credentials: false
+      # SECURITY TODO: pin to commit SHA.
+      # Run: gh api repos/anthropics/claude-code-action/git/ref/tags/v1 | jq -r .object.sha
+      # Then replace @v1 with @<sha> # v1
       - uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
