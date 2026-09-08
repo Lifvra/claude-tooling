@@ -6,6 +6,27 @@ LOG_PREFIX="[plugins]"
 
 log() { echo "$LOG_PREFIX $*"; }
 
+# ── INTEGRITY VERIFICATION ────────────────────────────────────────────────────
+# Records the commit SHA of each externally-cloned skill on first install and
+# warns if it changes on subsequent runs. SHA files live alongside the skill
+# dirs. To upgrade a skill: delete its .sha file, reinstall, review the new
+# SHA, and update any hardcoded pin once it is confirmed safe.
+verify_and_pin_sha() {
+  local dir="$1" label="$2" pin_file="$3"
+  local current_sha
+  current_sha=$(git -C "$dir" rev-parse HEAD 2>/dev/null || echo "unknown")
+  if [ ! -f "$pin_file" ]; then
+    echo "$current_sha" > "$pin_file"
+    log "$label: pinned to $current_sha — review this SHA before trusting"
+  elif [ "$(cat "$pin_file")" != "$current_sha" ]; then
+    log "SECURITY WARNING: $label SHA changed — expected $(cat "$pin_file"), got $current_sha"
+    log "SECURITY WARNING: removing $label — re-run after manual review"
+    rm -rf "$dir" "$pin_file"
+    return 1
+  fi
+  return 0
+}
+
 # ── MARKETPLACES ──────────────────────────────────────────────────────────────
 log "Registering marketplaces..."
 claude plugin marketplace add anthropics/claude-plugins-official          2>/dev/null || true
@@ -27,29 +48,46 @@ claude plugin install security-guidance@knowledge-work-plugins        --scope us
 claude plugin install tinyfish@knowledge-work-plugins                 --scope user 2>/dev/null || true
 
 # ── SKILL SUITES (git-cloned, not marketplace plugins) ────────────────────────
+# SECURITY: these are third-party repos cloned from HEAD. Each is pinned to its
+# first-install SHA via verify_and_pin_sha(). SHA files live in
+# ~/.claude/skills/.{name}.sha. Upgrade path: delete .sha, reinstall, validate.
 GSTACK_DIR="$HOME/.claude/skills/gstack"
+GSTACK_PIN="$HOME/.claude/skills/.gstack.sha"
 if [ ! -f "$GSTACK_DIR/SKILL.md" ]; then
   log "Installing gstack skill suite..."
   rm -rf "${GSTACK_DIR}.tmp"
   GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 \
     https://github.com/garrytan/gstack "${GSTACK_DIR}.tmp" 2>/dev/null \
     && mv "${GSTACK_DIR}.tmp" "$GSTACK_DIR" \
+    && verify_and_pin_sha "$GSTACK_DIR" "gstack" "$GSTACK_PIN" \
     && log "gstack installed" \
     || log "WARNING: gstack clone failed"
 else
+  CURRENT_SHA=$(git -C "$GSTACK_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
+  PINNED_SHA=$(cat "$GSTACK_PIN" 2>/dev/null || echo "")
+  if [ -n "$PINNED_SHA" ] && [ "$PINNED_SHA" != "$CURRENT_SHA" ]; then
+    log "SECURITY WARNING: gstack SHA mismatch — expected $PINNED_SHA, got $CURRENT_SHA"
+  fi
   log "gstack already present ($(cat "$GSTACK_DIR/VERSION" 2>/dev/null || echo 'version unknown'))"
 fi
 
 TASK_OBSERVER_DIR="$HOME/.claude/skills/task-observer"
+TASK_OBSERVER_PIN="$HOME/.claude/skills/.task-observer.sha"
 if [ ! -f "$TASK_OBSERVER_DIR/SKILL.md" ]; then
   log "Installing task-observer skill..."
   rm -rf "${TASK_OBSERVER_DIR}.tmp"
   GIT_LFS_SKIP_SMUDGE=1 git clone --depth 1 \
     https://github.com/rebelytics/one-skill-to-rule-them-all "${TASK_OBSERVER_DIR}.tmp" 2>/dev/null \
     && mv "${TASK_OBSERVER_DIR}.tmp" "$TASK_OBSERVER_DIR" \
+    && verify_and_pin_sha "$TASK_OBSERVER_DIR" "task-observer" "$TASK_OBSERVER_PIN" \
     && log "task-observer installed" \
     || log "WARNING: task-observer clone failed"
 else
+  CURRENT_SHA=$(git -C "$TASK_OBSERVER_DIR" rev-parse HEAD 2>/dev/null || echo "unknown")
+  PINNED_SHA=$(cat "$TASK_OBSERVER_PIN" 2>/dev/null || echo "")
+  if [ -n "$PINNED_SHA" ] && [ "$PINNED_SHA" != "$CURRENT_SHA" ]; then
+    log "SECURITY WARNING: task-observer SHA mismatch — expected $PINNED_SHA, got $CURRENT_SHA"
+  fi
   log "task-observer already present"
 fi
 
