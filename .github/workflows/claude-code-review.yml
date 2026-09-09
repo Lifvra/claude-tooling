@@ -16,17 +16,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      # SECURITY TODO: pin to commit SHA to prevent tag-mutation supply chain attack.
-      # Run: gh api repos/actions/checkout/git/ref/tags/v4 | jq -r .object.sha
-      # Then replace @v4 with @<sha> # v4.x.x
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 1
           persist-credentials: false
-      # SECURITY TODO: pin to commit SHA.
-      # Run: gh api repos/anthropics/claude-code-action/git/ref/tags/v1 | jq -r .object.sha
-      # Then replace @v1 with @<sha> # v1
-      - uses: anthropics/claude-code-action@v1
+      - uses: anthropics/claude-code-action@5ccc3a35a6367cdb8e6fbd0728287467540ecfe2 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: "https://github.com/anthropics/claude-code.git"
