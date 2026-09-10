@@ -1,4 +1,32 @@
 {
+  "extraKnownMarketplaces": {
+    "claude-plugins-official": {
+      "source": { "source": "github", "repo": "anthropics/claude-plugins-official" }
+    },
+    "understand-anything": {
+      "source": { "source": "github", "repo": "Egonex-AI/Understand-Anything", "ref": "v2.9.0" }
+    },
+    "thedotmack": {
+      "source": { "source": "github", "repo": "thedotmack/claude-mem", "ref": "v13.13.1" }
+    },
+    "context7-marketplace": {
+      "source": { "source": "github", "repo": "upstash/context7" }
+    },
+    "knowledge-work-plugins": {
+      "source": { "source": "github", "repo": "anthropics/knowledge-work-plugins" }
+    }
+  },
+  "enabledPlugins": {
+    "code-review@claude-plugins-official": true,
+    "claude-code-setup@claude-plugins-official": true,
+    "code-simplifier@claude-plugins-official": true,
+    "superpowers@claude-plugins-official": true,
+    "understand-anything@understand-anything": true,
+    "claude-mem@thedotmack": true,
+    "context7@context7-marketplace": true,
+    "security-guidance@knowledge-work-plugins": true,
+    "tinyfish@knowledge-work-plugins": true
+  },
   "hooks": {
     "SessionStart": [
       {
